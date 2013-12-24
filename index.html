@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Hah</title>
+	<script src="esprima.js" ></script>
+	<script src="escodegen.browser.js" ></script>
+</head>
+<body>
+	<div id='output'></div>
+<script>
+	//var syntax = esprima.parse('var answer = 42 # fn12');
+	var out = document.querySelector("#output");
+
+	var before = "42+12 # foo(12,arr,2#2)";
+	out.innerHTML = before + "<br /><br /><br />";
+
+	var syntax = esprima.parse("5 + 5");
+	console.log(JSON.stringify(syntax));
+	visitor(syntax,function(el){
+		if(el.type === "BinaryExpression"){
+
+			if(el.operator === "#"){
+				el.type = "CallExpression";
+				el.callee = {name:"operator_#",type:"Identifier"};
+				el.arguments = [el.left, el.right];
+				delete el.operator;
+				delete el.left;
+				delete el.right;
+			}
+			
+		}
+	});
+	
+	out.textContent += escodegen.generate(syntax);
+
+	function visitor(tree,visit){
+		for(i in tree){
+			visit(tree[i]);
+			if(typeof tree[i] === "object" && tree[i] !== null){
+				visitor(tree[i],visit);
+			}
+		}
+	}
+	</script>
+</body>
+</html>
